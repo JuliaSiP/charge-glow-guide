@@ -41,10 +41,8 @@ export const Route = createFileRoute("/stations/$id")({
 });
 
 function StationDetail() {
-  const { station, reviews } = Route.useLoaderData() as ReturnType<typeof Route.useLoaderData> & {
-    station: NonNullable<ReturnType<typeof getStation>>;
-    reviews: ReturnType<typeof getReviewsByStation>;
-  };
+  const data = Route.useLoaderData() as { station: Station; reviews: Review[] };
+  const { station, reviews } = data;
 
   const avgCharge = reviews.length
     ? reviews.reduce((a, r) => a + r.chargeQuality, 0) / reviews.length
