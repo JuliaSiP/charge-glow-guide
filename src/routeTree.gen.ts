@@ -15,6 +15,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as StationsIdRouteImport } from './routes/stations.$id'
+import { Route as AdminStationsRouteImport } from './routes/admin.stations'
 
 const MapRoute = MapRouteImport.update({
   id: '/map',
@@ -46,12 +47,18 @@ const StationsIdRoute = StationsIdRouteImport.update({
   path: '/stations/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminStationsRoute = AdminStationsRouteImport.update({
+  id: '/stations',
+  path: '/stations',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/guide': typeof GuideRoute
   '/map': typeof MapRoute
+  '/admin/stations': typeof AdminStationsRoute
   '/stations/$id': typeof StationsIdRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/guide': typeof GuideRoute
   '/map': typeof MapRoute
+  '/admin/stations': typeof AdminStationsRoute
   '/stations/$id': typeof StationsIdRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -68,20 +76,29 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/guide': typeof GuideRoute
   '/map': typeof MapRoute
+  '/admin/stations': typeof AdminStationsRoute
   '/stations/$id': typeof StationsIdRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/guide' | '/map' | '/stations/$id' | '/admin/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/guide'
+    | '/map'
+    | '/admin/stations'
+    | '/stations/$id'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/guide' | '/map' | '/stations/$id' | '/admin'
+  to: '/' | '/guide' | '/map' | '/admin/stations' | '/stations/$id' | '/admin'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/guide'
     | '/map'
+    | '/admin/stations'
     | '/stations/$id'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -138,14 +155,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StationsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/stations': {
+      id: '/admin/stations'
+      path: '/stations'
+      fullPath: '/admin/stations'
+      preLoaderRoute: typeof AdminStationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminStationsRoute: typeof AdminStationsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminStationsRoute: AdminStationsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
