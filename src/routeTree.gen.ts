@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as GuideRouteImport } from './routes/guide'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StationsIdRouteImport } from './routes/stations.$id'
 
@@ -22,6 +23,11 @@ const MapRoute = MapRouteImport.update({
 const GuideRoute = GuideRouteImport.update({
   id: '/guide',
   path: '/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const StationsIdRoute = StationsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/guide': typeof GuideRoute
   '/map': typeof MapRoute
   '/stations/$id': typeof StationsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/guide': typeof GuideRoute
   '/map': typeof MapRoute
   '/stations/$id': typeof StationsIdRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/guide': typeof GuideRoute
   '/map': typeof MapRoute
   '/stations/$id': typeof StationsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/guide' | '/map' | '/stations/$id'
+  fullPaths: '/' | '/admin' | '/guide' | '/map' | '/stations/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/guide' | '/map' | '/stations/$id'
-  id: '__root__' | '/' | '/guide' | '/map' | '/stations/$id'
+  to: '/' | '/admin' | '/guide' | '/map' | '/stations/$id'
+  id: '__root__' | '/' | '/admin' | '/guide' | '/map' | '/stations/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   GuideRoute: typeof GuideRoute
   MapRoute: typeof MapRoute
   StationsIdRoute: typeof StationsIdRoute
@@ -85,6 +95,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuideRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   GuideRoute: GuideRoute,
   MapRoute: MapRoute,
   StationsIdRoute: StationsIdRoute,
