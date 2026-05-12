@@ -5,6 +5,8 @@ import {
   AMENITY_LABELS,
   getReviewsByStation,
   getStation,
+  type Review,
+  type Station,
 } from "@/lib/mockData";
 import { ArrowLeft, Clock, MapPin, Star, Zap } from "lucide-react";
 
