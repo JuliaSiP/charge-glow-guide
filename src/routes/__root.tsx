@@ -72,14 +72,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Flui — Charge Platform" },
+      { name: "description", content: "O guia Michelin dos eletropostos. Curadoria de pontos de recarga premium pelo Brasil." },
+      { name: "author", content: "Julia da Silva Pereira — RM 559627" },
+      { property: "og:title", content: "Flui — Charge Platform" },
+      { property: "og:description", content: "Curadoria estilo Michelin de eletropostos. FIAP × Google 2026." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       {
