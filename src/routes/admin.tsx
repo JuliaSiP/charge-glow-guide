@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { Header } from "@/components/Header";
-import { BarChart3, MessageSquare, Zap } from "lucide-react";
+import { BarChart3, FileBarChart, MessageSquare, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -18,6 +18,12 @@ function AdminLayout() {
       to: "/admin/reviews",
       label: "Avaliacoes",
       icon: MessageSquare,
+      exact: false,
+    },
+    {
+      to: "/admin/reports",
+      label: "Relatorios",
+      icon: FileBarChart,
       exact: false,
     },
   ];

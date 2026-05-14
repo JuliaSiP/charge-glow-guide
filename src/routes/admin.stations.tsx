@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { FormEvent } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  createStation as createStationApi,
+  listStations as fetchStations,
+  updateStation as updateStationApi,
+} from "@/lib/apiClient";
 import {
   AMENITIES,
   AMENITY_LABELS,
@@ -45,6 +50,17 @@ function AdminStations() {
   const [query, setQuery] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<StationDraft>(() => emptyDraft());
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    fetchStations()
+      .then((response) => {
+        setRows(response.data);
+        setApiError(null);
+      })
+      .catch((error: Error) => setApiError(error.message));
+  }, []);
 
   const filtered = useMemo(
     () =>
@@ -69,47 +85,72 @@ function AdminStations() {
     setDraft(toDraft(station));
   };
 
-  const updateStatus = (id: string, status: StationStatus) =>
+  const updateStatus = async (id: string, status: StationStatus) => {
     setRows((prev) => prev.map((row) => (row.id === id ? { ...row, status } : row)));
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+    try {
+      const updated = await updateStationApi(id, { status });
+      setRows((prev) => prev.map((row) => (row.id === id ? updated : row)));
+      setApiError(null);
+    } catch (error) {
+      setApiError(error instanceof Error ? error.message : "Erro ao atualizar status");
+    }
+  };
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const normalized = normalizeDraft(draft, rows.length);
+    setIsSaving(true);
 
     if (editingId) {
-      setRows((prev) =>
-        prev.map((row) =>
-          row.id === editingId
-            ? {
-                ...row,
-                ...normalized,
-                id: row.id,
-                cover: row.cover,
-                rating: row.rating,
-                reviewsCount: row.reviewsCount,
-                sessionsLast30d: row.sessionsLast30d,
-                lastSync: new Date().toISOString(),
-              }
-            : row,
-        ),
-      );
+      try {
+        const updated = await updateStationApi(editingId, normalized);
+        setRows((prev) => prev.map((row) => (row.id === editingId ? updated : row)));
+        setApiError(null);
+      } catch (error) {
+        setRows((prev) =>
+          prev.map((row) =>
+            row.id === editingId
+              ? {
+                  ...row,
+                  ...normalized,
+                  id: row.id,
+                  cover: row.cover,
+                  rating: row.rating,
+                  reviewsCount: row.reviewsCount,
+                  sessionsLast30d: row.sessionsLast30d,
+                  lastSync: new Date().toISOString(),
+                }
+              : row,
+          ),
+        );
+        setApiError(error instanceof Error ? error.message : "Alteracao salva apenas localmente");
+      }
     } else {
-      setRows((prev) => [
-        {
-          ...normalized,
-          id: nextStationId(prev),
-          cover: DEFAULT_COVER,
-          rating: 4.5,
-          reviewsCount: 0,
-          sessionsLast30d: 0,
-          lastSync: new Date().toISOString(),
-        },
-        ...prev,
-      ]);
+      try {
+        const created = await createStationApi(normalized);
+        setRows((prev) => [created, ...prev]);
+        setApiError(null);
+      } catch (error) {
+        setRows((prev) => [
+          {
+            ...normalized,
+            id: nextStationId(prev),
+            cover: DEFAULT_COVER,
+            rating: 4.5,
+            reviewsCount: 0,
+            sessionsLast30d: 0,
+            lastSync: new Date().toISOString(),
+          },
+          ...prev,
+        ]);
+        setApiError(error instanceof Error ? error.message : "Cadastro salvo apenas localmente");
+      }
     }
 
     setEditingId(null);
     setDraft(emptyDraft());
+    setIsSaving(false);
   };
 
   return (
@@ -119,7 +160,7 @@ function AdminStations() {
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">Pontos de recarga</h1>
             <p className="text-sm text-muted-foreground">
-              Listagem operacional com cadastro e edicao em dados simulados.
+              Listagem operacional com cadastro e edicao via API REST simulada.
             </p>
           </div>
           <button
@@ -130,6 +171,11 @@ function AdminStations() {
             <Plus className="h-4 w-4" /> Novo ponto
           </button>
         </header>
+        {apiError && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            API indisponivel: {apiError}. A interface mantem alteracoes locais para demonstracao.
+          </div>
+        )}
 
         <div className="rounded-xl border border-border/70 bg-card shadow-[var(--shadow-card)]">
           <div className="border-b border-border/60 p-4">
@@ -352,10 +398,11 @@ function AdminStations() {
 
           <button
             type="submit"
+            disabled={isSaving}
             className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-semibold text-primary-foreground shadow-[var(--shadow-elegant)] hover:bg-primary-deep"
           >
             <Check className="h-4 w-4" />
-            {isEditing ? "Salvar alteracoes" : "Cadastrar ponto"}
+            {isSaving ? "Sincronizando..." : isEditing ? "Salvar alteracoes" : "Cadastrar ponto"}
           </button>
         </form>
       </section>

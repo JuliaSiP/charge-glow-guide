@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -10,6 +11,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { getReports } from "@/lib/apiClient";
+import type { NetworkReport } from "@/lib/database";
 import { REVIEWS, STATIONS } from "@/lib/mockData";
 import { Activity, Plug, Star, Zap } from "lucide-react";
 
@@ -18,39 +21,70 @@ export const Route = createFileRoute("/admin/")({
 });
 
 function AdminDashboard() {
-  const totalSessions = STATIONS.reduce((sum, station) => sum + station.sessionsLast30d, 0);
-  const avgRating = STATIONS.reduce((sum, station) => sum + station.rating, 0) / STATIONS.length;
-  const operational = STATIONS.filter((station) => station.status !== "MANUTENCAO").length;
-  const totalChargers = STATIONS.reduce(
+  const [report, setReport] = useState<NetworkReport | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getReports()
+      .then((data) => {
+        setReport(data);
+        setApiError(null);
+      })
+      .catch((error: Error) => setApiError(error.message));
+  }, []);
+
+  const totalSessions =
+    report?.totals.sessionsLast30d ??
+    STATIONS.reduce((sum, station) => sum + station.sessionsLast30d, 0);
+  const avgRating =
+    report?.totals.averageRating ??
+    STATIONS.reduce((sum, station) => sum + station.rating, 0) / STATIONS.length;
+  const operational =
+    report?.totals.operationalStations ??
+    STATIONS.filter((station) => station.status !== "MANUTENCAO").length;
+  const totalChargers = report?.totals.chargers ?? STATIONS.reduce(
     (sum, station) =>
       sum + station.chargers.reduce((chargerSum, charger) => chargerSum + charger.count, 0),
     0,
   );
+  const totalStations = report?.totals.stations ?? STATIONS.length;
 
-  const topStations = [...STATIONS]
-    .sort((a, b) => b.sessionsLast30d - a.sessionsLast30d)
-    .slice(0, 5)
-    .map((station) => ({
+  const topStations =
+    report?.topStations.map((station) => ({
       name: station.name.replace("Flui ", ""),
-      sessoes: station.sessionsLast30d,
-    }));
+      sessoes: station.sessions,
+    })) ??
+    [...STATIONS]
+      .sort((a, b) => b.sessionsLast30d - a.sessionsLast30d)
+      .slice(0, 5)
+      .map((station) => ({
+        name: station.name.replace("Flui ", ""),
+        sessoes: station.sessionsLast30d,
+      }));
 
-  const trend = Array.from({ length: 14 }, (_, index) => ({
-    dia: `D${index + 1}`,
-    sessoes: 120 + Math.round(Math.sin(index / 2) * 35) + index * 6,
-  }));
+  const trend =
+    report?.sessionsByDay ??
+    Array.from({ length: 14 }, (_, index) => ({
+      dia: `D${index + 1}`,
+      sessoes: 120 + Math.round(Math.sin(index / 2) * 35) + index * 6,
+    }));
 
   return (
     <div className="space-y-8">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
-          Visao geral da rede Flui nos ultimos 30 dias.
+          Visao geral da rede Flui nos ultimos 30 dias via /api/reports.
         </p>
       </header>
+      {apiError && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          API indisponivel: {apiError}. Exibindo cache local.
+        </div>
+      )}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KPI icon={Zap} label="Pontos ativos" value={`${operational}/${STATIONS.length}`} />
+        <KPI icon={Zap} label="Pontos ativos" value={`${operational}/${totalStations}`} />
         <KPI icon={Activity} label="Sessoes 30d" value={totalSessions.toLocaleString("pt-BR")} />
         <KPI icon={Plug} label="Carregadores" value={totalChargers.toString()} />
         <KPI icon={Star} label="Nota media" value={avgRating.toFixed(2)} />

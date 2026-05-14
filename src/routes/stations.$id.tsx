@@ -1,6 +1,9 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import type { FormEvent } from "react";
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { createReview as createReviewApi } from "@/lib/apiClient";
 import {
   AMENITY_LABELS,
   getReviewsByStation,
@@ -60,7 +63,11 @@ const statusLabel: Record<Station["status"], string> = {
 
 function StationDetail() {
   const data = Route.useLoaderData() as { station: Station; reviews: Review[] };
-  const { station, reviews } = data;
+  const { station } = data;
+  const [reviews, setReviews] = useState<Review[]>(data.reviews);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [reviewStatus, setReviewStatus] = useState<string | null>(null);
 
   const avgCharge = reviews.length
     ? reviews.reduce((sum, review) => sum + review.chargeQuality, 0) / reviews.length
@@ -70,6 +77,25 @@ function StationDetail() {
     : 0;
   const totalChargers = station.chargers.reduce((sum, charger) => sum + charger.count, 0);
   const availableChargers = station.chargers.reduce((sum, charger) => sum + charger.available, 0);
+
+  const submitReview = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setReviewStatus("Enviando avaliacao...");
+
+    try {
+      const review = await createReviewApi(station.id, {
+        rating,
+        chargeQuality: rating,
+        infrastructure: Math.max(1, rating - 1),
+        comment: comment || "Experiencia registrada pelo app Flui.",
+      });
+      setReviews((prev) => [review, ...prev]);
+      setComment("");
+      setReviewStatus("Avaliacao enviada para a API.");
+    } catch (error) {
+      setReviewStatus(error instanceof Error ? error.message : "Nao foi possivel enviar.");
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -201,6 +227,44 @@ function StationDetail() {
                 <ScoreBar label="Infraestrutura" value={avgInfra} />
               </div>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <form
+                  onSubmit={submitReview}
+                  className="rounded-xl border border-primary/30 bg-primary/5 p-5 shadow-[var(--shadow-card)]"
+                >
+                  <div className="text-sm font-semibold">Avaliar este ponto</div>
+                  <label className="mt-3 block text-sm font-medium">
+                    Nota
+                    <select
+                      value={rating}
+                      onChange={(event) => setRating(Number(event.target.value))}
+                      className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    >
+                      {[5, 4, 3, 2, 1].map((value) => (
+                        <option key={value} value={value}>
+                          {value} estrelas
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="mt-3 block text-sm font-medium">
+                    Comentario
+                    <textarea
+                      value={comment}
+                      onChange={(event) => setComment(event.target.value)}
+                      className="mt-1 min-h-24 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+                      placeholder="Como foi sua recarga?"
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    className="mt-3 inline-flex h-10 w-full items-center justify-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary-deep"
+                  >
+                    Enviar avaliacao
+                  </button>
+                  {reviewStatus && (
+                    <p className="mt-2 text-xs text-muted-foreground">{reviewStatus}</p>
+                  )}
+                </form>
                 {reviews.map((review) => (
                   <article
                     key={review.id}

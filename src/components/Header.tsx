@@ -10,10 +10,12 @@ export function Header() {
         { to: "/admin", label: "Dashboard" },
         { to: "/admin/stations", label: "Pontos" },
         { to: "/admin/reviews", label: "Avaliacoes" },
+        { to: "/admin/reports", label: "Relatorios" },
       ]
     : [
         { to: "/", label: "Inicio" },
         { to: "/map", label: "Mapa" },
+        { to: "/profile", label: "Perfil" },
         { to: "/guide", label: "Guia Flui" },
       ];
 
@@ -53,17 +55,17 @@ export function Header() {
         <div className="flex shrink-0 items-center gap-2">
           {isAdmin ? (
             <Link
-              to="/"
+              to="/login"
               className="inline-flex h-9 items-center rounded-md border border-input bg-background px-3 text-sm font-medium hover:bg-accent"
             >
               Sair
             </Link>
           ) : (
             <Link
-              to="/admin"
+              to="/login"
               className="hidden h-9 items-center rounded-md border border-input bg-background px-3 text-sm font-medium hover:bg-accent sm:inline-flex"
             >
-              Equipe Flui
+              Entrar
             </Link>
           )}
           {!isAdmin && (

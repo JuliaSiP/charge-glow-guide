@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { listReviews as fetchReviews } from "@/lib/apiClient";
 import { REVIEWS, STATIONS, type Review } from "@/lib/mockData";
 import { Check, MessageSquare, Star, X } from "lucide-react";
 
@@ -10,6 +11,8 @@ export const Route = createFileRoute("/admin/reviews")({
 type Decision = "PENDING" | "APPROVED" | "REJECTED";
 
 function AdminReviews() {
+  const [reviews, setReviews] = useState<Review[]>(REVIEWS);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [state, setState] = useState<Record<string, Decision>>(
     Object.fromEntries(REVIEWS.map((review) => [review.id, "PENDING"])),
   );
@@ -19,9 +22,22 @@ function AdminReviews() {
   const selectedStation =
     stationId === "ALL" ? undefined : STATIONS.find((station) => station.id === stationId);
 
+  useEffect(() => {
+    fetchReviews(stationId === "ALL" ? undefined : stationId)
+      .then((response) => {
+        setReviews(response.data);
+        setState((prev) => ({
+          ...Object.fromEntries(response.data.map((review) => [review.id, "PENDING" as Decision])),
+          ...prev,
+        }));
+        setApiError(null);
+      })
+      .catch((error: Error) => setApiError(error.message));
+  }, [stationId]);
+
   const reviewsByStation = useMemo(
-    () => REVIEWS.filter((review) => (stationId === "ALL" ? true : review.stationId === stationId)),
-    [stationId],
+    () => reviews.filter((review) => (stationId === "ALL" ? true : review.stationId === stationId)),
+    [reviews, stationId],
   );
 
   const filtered: Review[] = reviewsByStation.filter((review) => state[review.id] === tab);
@@ -58,8 +74,8 @@ function AdminReviews() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Avaliacoes</h1>
-          <p className="text-sm text-muted-foreground">
-            Visualizacao das avaliacoes dos motoristas por ponto de recarga.
+        <p className="text-sm text-muted-foreground">
+            Visualizacao das avaliacoes dos motoristas por ponto de recarga via API.
           </p>
         </div>
         <label className="min-w-64 text-sm font-medium">
@@ -78,6 +94,11 @@ function AdminReviews() {
           </select>
         </label>
       </header>
+      {apiError && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          API indisponivel: {apiError}. Exibindo avaliacoes locais.
+        </div>
+      )}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPI label="Nota media" value={average ? average.toFixed(1) : "-"} />

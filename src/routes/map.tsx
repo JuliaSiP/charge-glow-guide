@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Header } from "@/components/Header";
 import { StationMap } from "@/components/StationMap";
+import { listStations as fetchStations } from "@/lib/apiClient";
 import {
   AMENITIES,
   AMENITY_LABELS,
@@ -43,25 +44,63 @@ function MapPage() {
   const [minPower, setMinPower] = useState(0);
   const [openOnly, setOpenOnly] = useState(false);
   const [selectedId, setSelectedId] = useState<string | undefined>(STATIONS[0]?.id);
+  const [stations, setStations] = useState<Station[]>(STATIONS);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  const filtered = useMemo<Station[]>(() => {
-    return STATIONS.filter((station) => {
-      const searchable =
-        `${station.name} ${station.address} ${station.connectors.join(" ")}`.toLowerCase();
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
 
-      if (query && !searchable.includes(query.toLowerCase())) return false;
-      if (
-        connectors.length &&
-        !connectors.some((connector) => station.connectors.includes(connector))
-      )
-        return false;
-      if (amenities.length && !amenities.every((amenity) => station.amenities.includes(amenity)))
-        return false;
-      if (station.powerKw < minPower) return false;
-      if (openOnly && station.status !== "DISPONIVEL") return false;
-      return true;
-    });
+    fetchStations({
+      query,
+      connectors,
+      amenities,
+      minPower,
+      available: openOnly,
+    })
+      .then((response) => {
+        if (!cancelled) {
+          setStations(response.data);
+          setApiError(null);
+        }
+      })
+      .catch((error: Error) => {
+        if (!cancelled) {
+          setApiError(error.message);
+          setStations(
+            STATIONS.filter((station) => {
+              const searchable =
+                `${station.name} ${station.address} ${station.connectors.join(" ")}`.toLowerCase();
+
+              if (query && !searchable.includes(query.toLowerCase())) return false;
+              if (
+                connectors.length &&
+                !connectors.some((connector) => station.connectors.includes(connector))
+              )
+                return false;
+              if (
+                amenities.length &&
+                !amenities.every((amenity) => station.amenities.includes(amenity))
+              )
+                return false;
+              if (station.powerKw < minPower) return false;
+              if (openOnly && station.status !== "DISPONIVEL") return false;
+              return true;
+            }),
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [amenities, connectors, minPower, openOnly, query]);
+
+  const filtered = useMemo<Station[]>(() => stations, [stations]);
 
   const selectedStation = useMemo(
     () => filtered.find((station) => station.id === selectedId) ?? filtered[0] ?? undefined,
@@ -171,6 +210,7 @@ function MapPage() {
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>
               {filtered.length} {filtered.length === 1 ? "ponto" : "pontos"} encontrados
+              {isLoading ? " - sincronizando API" : ""}
             </span>
             {(connectors.length > 0 || amenities.length > 0 || minPower > 0 || openOnly) && (
               <button
@@ -187,6 +227,11 @@ function MapPage() {
               </button>
             )}
           </div>
+          {apiError && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              API indisponivel; exibindo cache local. {apiError}
+            </div>
+          )}
 
           <div className="flex flex-col gap-2 overflow-y-auto lg:max-h-[calc(100vh-430px)]">
             {filtered.map((station) => (
