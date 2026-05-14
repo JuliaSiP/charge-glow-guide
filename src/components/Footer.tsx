@@ -7,8 +7,8 @@ export function Footer() {
             Flui<span className="text-primary">.</span>
           </div>
           <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-            Curadoria de eletropostos premium pelo Brasil. O guia de mobilidade
-            elétrica para quem dirige com exigência.
+            Curadoria de eletropostos premium pelo Brasil para quem dirige eletrico com
+            previsibilidade, conforto e potencia real.
           </p>
         </div>
         <div>
@@ -16,20 +16,20 @@ export function Footer() {
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             <li>Mapa</li>
             <li>Guia Flui</li>
-            <li>Aplicativo</li>
+            <li>Painel operacional</li>
           </ul>
         </div>
         <div>
           <div className="text-sm font-semibold">Charge Platform Challenge</div>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li>FIAP × Google 2026</li>
+            <li>FIAP x Google 2026</li>
             <li>Julia da Silva Pereira</li>
             <li>RM 559627</li>
           </ul>
         </div>
       </div>
       <div className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground">
-        © 2026 Flui — Charge Platform. Protótipo acadêmico.
+        2026 Flui - Charge Platform. Prototipo academico.
       </div>
     </footer>
   );
