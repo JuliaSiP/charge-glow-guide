@@ -81,16 +81,16 @@ Authorization: Bearer flui-driver-demo-token
 ### Exemplos
 
 ```bash
-curl https://SEU_DEPLOY.vercel.app/api/stations?connector=CCS2&minPower=100
+curl https://charge-glow-guide-publish.vercel.app/api/stations?connector=CCS2&minPower=100
 ```
 
 ```bash
 curl -H "Authorization: Bearer flui-admin-demo-token" \
-  https://SEU_DEPLOY.vercel.app/api/reports
+  https://charge-glow-guide-publish.vercel.app/api/reports
 ```
 
 ```bash
-curl -X POST https://SEU_DEPLOY.vercel.app/api/auth/login \
+curl -X POST https://charge-glow-guide-publish.vercel.app/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"motorista@flui.app","password":"flui123"}'
 ```

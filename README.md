@@ -2,6 +2,8 @@
 
 Plataforma integrada para motoristas e equipe Flui, com app mobile responsivo, painel web, API REST, base de dados simulada e build preparado para Vercel.
 
+Deploy de producao: https://charge-glow-guide-publish.vercel.app
+
 ## Funcionalidades
 
 - App mobile com mapa interativo integrado ao Google Maps, marcadores de pontos, filtros por conector, potencia e comodidades.
