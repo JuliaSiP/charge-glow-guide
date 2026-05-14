@@ -5,11 +5,10 @@ import { Footer } from "@/components/Footer";
 export const Route = createFileRoute("/guide")({
   head: () => ({
     meta: [
-      { title: "Guia Flui · Curadoria de eletropostos" },
+      { title: "Guia Flui - Curadoria de eletropostos" },
       {
         name: "description",
-        content:
-          "Entenda como Flui audita e classifica estações de recarga em 1, 2 ou 3 estrelas, no estilo Michelin.",
+        content: "Entenda como a Flui classifica pontos de recarga em 1, 2 ou 3 estrelas.",
       },
     ],
   }),
@@ -19,18 +18,18 @@ export const Route = createFileRoute("/guide")({
 const TIERS = [
   {
     stars: 1,
-    title: "Estação recomendada",
-    desc: "Atende ao padrão mínimo Flui de potência declarada, conectores funcionais e segurança no acesso.",
+    title: "Ponto recomendado",
+    desc: "Atende ao padrao minimo Flui de potencia declarada, conectores funcionais e seguranca no acesso.",
   },
   {
     stars: 2,
     title: "Vale o desvio",
-    desc: "Carregamento confiável + comodidade extra (café, banheiro limpo, Wi-Fi). Ideal para a rotina.",
+    desc: "Carregamento confiavel com comodidade extra, como cafe, banheiro limpo ou Wi-Fi.",
   },
   {
     stars: 3,
     title: "Vale a viagem",
-    desc: "Experiência premium completa: lounge, atendimento, ultra-rápida e gastronomia no entorno.",
+    desc: "Experiencia premium completa com lounge, suporte, ultra rapida e estrutura do entorno.",
   },
 ];
 
@@ -44,45 +43,40 @@ function Guide() {
             Metodologia Flui
           </span>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
-            Como classificamos cada estação
+            Como classificamos cada ponto
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Inspirados no Guia Michelin, atribuímos de 1 a 3 estrelas Flui
-            depois de auditoria presencial, dados de carga reais e curadoria do
-            time editorial.
+            A pontuacao combina auditoria operacional, dados simulados de carga e avaliacoes dos
+            motoristas.
           </p>
         </section>
 
         <section className="mx-auto grid max-w-6xl gap-6 px-4 pb-20 sm:px-6 md:grid-cols-3">
-          {TIERS.map((t) => (
+          {TIERS.map((tier) => (
             <article
-              key={t.stars}
-              className="rounded-3xl border border-border/70 bg-card p-8 shadow-[var(--shadow-card)]"
+              key={tier.stars}
+              className="rounded-xl border border-border/70 bg-card p-8 shadow-[var(--shadow-card)]"
             >
-              <div className="text-3xl text-primary">
-                {Array.from({ length: t.stars }).map((_, i) => "★").join("")}
-              </div>
-              <h2 className="mt-3 text-xl font-semibold">{t.title}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">{t.desc}</p>
+              <div className="text-3xl text-primary">{"*".repeat(tier.stars)}</div>
+              <h2 className="mt-3 text-xl font-semibold">{tier.title}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">{tier.desc}</p>
             </article>
           ))}
         </section>
 
         <section className="border-t border-border/60 bg-card">
           <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
-            <h2 className="text-3xl font-semibold tracking-tight">
-              Critérios avaliados
-            </h2>
+            <h2 className="text-3xl font-semibold tracking-tight">Criterios avaliados</h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2">
               {[
-                ["Qualidade da carga", "Potência real entregue × declarada, estabilidade e tempo médio."],
-                ["Infraestrutura", "Iluminação, cobertura, sinalização e segurança do acesso."],
-                ["Experiência", "Atendimento, comodidades e ambiência do entorno."],
-                ["Confiabilidade", "Uptime, conectores funcionais e suporte 24/7."],
-              ].map(([t, d]) => (
-                <div key={t} className="border-l-4 border-primary pl-4">
-                  <h3 className="font-semibold">{t}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{d}</p>
+                ["Qualidade da carga", "Potencia real entregue, estabilidade e tempo medio."],
+                ["Infraestrutura", "Iluminacao, cobertura, sinalizacao e seguranca do acesso."],
+                ["Experiencia", "Atendimento, comodidades e conforto durante a recarga."],
+                ["Confiabilidade", "Uptime, conectores funcionais e suporte operacional."],
+              ].map(([title, description]) => (
+                <div key={title} className="border-l-4 border-primary pl-4">
+                  <h3 className="font-semibold">{title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{description}</p>
                 </div>
               ))}
             </div>
@@ -91,7 +85,7 @@ function Guide() {
                 to="/map"
                 className="inline-flex h-12 items-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-elegant)] hover:bg-primary-deep"
               >
-                Ver estações no mapa →
+                Ver pontos no mapa
               </Link>
             </div>
           </div>
